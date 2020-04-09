@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 
+    <parent>
+        <!--required parent POM-->
+        <groupId>dev.appsody</groupId>
+        <artifactId>java-openliberty</artifactId>
+        <version>[0.1, 0.3)</version>
+    </parent>
+ 
+  <groupId>g1</groupId>
+  <artifactId>a1-war</artifactId>
+  <version>1.0</version>
+  <packaging>war</packaging>
+
+  <name>a1 war</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <dependencyManagement>
+      <dependencies>
+          <dependency>
+              <groupId>org.eclipse.microprofile</groupId>
+              <artifactId>microprofile</artifactId>
+              <version>3.2</version>
+              <scope>import</scope>
+              <type>pom</type>
+          </dependency>
+      </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+        <groupId>org.eclipse.collections</groupId>
+        <artifactId>eclipse-collections</artifactId>
+        <version>10.1.0</version>
+        <!-- In some ways 'runtime' might seem better, since we're not compiling against this, but we don't really care about avoiding this, just looking to package outside of the WAR. 
+             Could've use this API in a compile-time way to prove the same points.-->
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.eclipse.microprofile.health</groupId>
+        <artifactId>microprofile-health-api</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>javax</groupId>
+        <artifactId>javaee-api</artifactId>
+        <version>8.0</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+	        <dependency>
+              <groupId>mysql</groupId>
+              <artifactId>mysql-connector-java</artifactId>
+              <version>8.0.15</version>
+              <scope>compile</scope>
+          </dependency>
+          <dependency>
+              <groupId>org.eclipse.collections</groupId>
+              <artifactId>eclipse-collections</artifactId>
+              <version>10.1.0</version>
+          </dependency>
+  </dependencies>
+
+  <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-war-dependency</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- put war dependency file in target after dependency resolution -->
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeTypes>war</includeTypes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resource-adapter-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/liberty/wlp/usr/shared/resources</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <excludeTransitive>true</excludeTransitive>
+                            <includeTypes>jar</includeTypes>
+                            <includeGroupIds>mysql</includeGroupIds>
+                        </configuration>
+                    </execution>
+                    <!-- example of how to move a shared library dependency -->
+                    <execution>
+                        <id>copy-shared-library-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/liberty/wlp/usr/servers/defaultServer/lib/global</outputDirectory>
+                            <overWriteReleases>true</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <includeTypes>jar</includeTypes>
+                            <includeGroupIds>org.eclipse.collections</includeGroupIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Enable liberty-maven plugin -->
+            <plugin>
+                <groupId>io.openliberty.tools</groupId>
+                <artifactId>liberty-maven-plugin</artifactId>
+            </plugin>
+<!--
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <id>default-war</id>
+            <phase>package</phase>
+            <goals>
+              <goal>war</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+	  -->
+    </plugins>
+  </build>
+</project>
